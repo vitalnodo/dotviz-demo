@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>dotviz browser demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>dotviz demo</h1>
+
+    <div>
+      <label for="input-type-select">Input:</label>
+      <select id="input-type-select">
+        <option value="dot">DOT</option>
+        <option value="json">JSON</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="engine-select">Engine:</label>
+      <select id="engine-select">
+        <option value="dot">dot</option>
+        <option value="circo">circo</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="format-select">Text:</label>
+      <select id="format-select">
+        <option value="svg">SVG source</option>
+        <option value="dot">DOT (formatted)</option>
+      </select>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:0.25rem;">
+      <input type="checkbox" id="preview-checkbox" checked />
+      Show preview
+    </label>
+
+    <button id="render-btn" disabled>Render</button>
+
+    <div id="status">Loading dotviz…</div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <strong>Input</strong>
+      <textarea id="dot-input"></textarea>
+      <small id="input-hint">Tip: Ctrl+Enter to render.</small>
+
+<div id="font-tools">
+  <strong>Font loader</strong>
+  <textarea
+    id="font-loader-input"
+  ></textarea>
+  <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+    <button id="load-fonts-btn" type="button">Load fonts</button>
+    <span id="font-loader-hint">
+      Format: FamilyName|URL (one per line). Then use fontname="FamilyName" in DOT/JSON.
+    </span>
+  </div>
+</div>
+
+    </section>
+
+    <section class="panel">
+      <strong>Preview</strong>
+      <div id="preview-wrapper">
+        <div id="preview"></div>
+      </div>
+
+      <div id="output-toolbar">
+        <span>Text output</span>
+        <button id="copy-btn" type="button">Copy text</button>
+      </div>
+      <textarea id="output-text"></textarea>
+
+      <div id="messages">
+        <div id="messages-header">
+          <span>Messages</span>
+          <button id="clear-messages-btn" type="button">Clear</button>
+        </div>
+        <div id="messages-body"></div>
+      </div>
+
+      <div id="image-tools">
+        <strong>Image tools</strong>
+        <div id="image-controls">
+          <label for="image-format">Image format:</label>
+          <select id="image-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+          <button id="download-image-btn" type="button">Download image</button>
+          <button id="copy-image-btn" type="button">Copy image</button>
+        </div>
+        <div id="image-preview-wrapper">
+          <canvas id="image-preview"></canvas>
+        </div>
+        <small>Image preview is generated from the latest rendered (or manually edited) SVG.</small>
+      </div>
+    </section>
+  </main>
+
+  <script src="./dotviz.browser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
