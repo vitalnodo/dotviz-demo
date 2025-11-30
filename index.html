@@ -61,6 +61,23 @@
       Format: FamilyName|URL (one per line). Then use fontname="FamilyName" in DOT/JSON.
     </span>
   </div>
+
+  <div id="base-path-tools" style="margin-top:0.75rem;display:flex;flex-direction:column;gap:0.4rem;">
+  <strong>Image base path</strong>
+  <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+    <input
+      id="base-path-input"
+      type="text"
+      placeholder="/images/"
+      style="flex:1 1 160px;padding:0.25rem 0.5rem;font:inherit;"
+    />
+    <button id="set-base-path-btn" type="button">Set base path</button>
+  </div>
+  <small>
+    Used for images (node <code>image=</code> or <code>&lt;IMG SRC&gt;</code>). Stored in
+    <code>window.dotvizImageBasePath</code>.
+  </small>
+</div>
 </div>
 
     </section>

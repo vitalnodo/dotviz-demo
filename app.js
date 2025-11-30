@@ -24,6 +24,33 @@
   const fontLoaderInput = document.getElementById("font-loader-input");
   const loadFontsBtn = document.getElementById("load-fonts-btn");
 
+  const basePathInput = document.getElementById("base-path-input");
+  const setBasePathBtn = document.getElementById("set-base-path-btn");
+
+  function applyImageBasePathFromInput() {
+    const raw = (basePathInput.value || "").trim();
+    let normalized = raw;
+    if (normalized && !normalized.endsWith("/")) {
+      normalized += "/";
+    }
+    window.dotvizImageBasePath = normalized;
+    if (normalized) {
+      appendMessage(
+        "info",
+        `Image base path set to "${normalized}" (window.dotvizImageBasePath)`
+      );
+      statusEl.textContent = `Image base path: ${normalized}`;
+    } else {
+      appendMessage(
+        "info",
+        'Image base path cleared (window.dotvizImageBasePath = "")'
+      );
+      statusEl.textContent = "Image base path cleared";
+    }
+  }
+
+  setBasePathBtn.addEventListener("click", applyImageBasePathFromInput);
+
   const MIME_BY_VALUE = {
     png: "image/png",
     jpeg: "image/jpeg",
@@ -123,6 +150,7 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
   let fontsLoadedPromise = null;
 
   const fontDataUrlCache = new Map();
+  const imageDataUrlCache = new Map();
 
   function isCanvasMimeSupported(mimeType) {
     const canvas = document.createElement("canvas");
@@ -206,13 +234,11 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
           'Global "dotviz" is not defined. Check dotviz.browser.js path / UMD config.'
         );
       }
-
       if (typeof pkg.instance === "function") {
         viz = await pkg.instance();
       } else {
         viz = pkg;
       }
-
       statusEl.textContent = "Ready";
       renderBtn.disabled = false;
       appendMessage("info", "dotviz loaded");
@@ -333,6 +359,24 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
     await fontsLoadedPromise;
   }
 
+  function joinBaseAndPath(base, path) {
+    if (!base) return path;
+    if (base.endsWith("/")) return base + path.replace(/^\/+/, "");
+    return base + (path.startsWith("/") ? path : "/" + path);
+  }
+
+  async function blobToDataUrl(blob, fallbackMime) {
+    const buf = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = btoa(binary);
+    const mime = blob.type || fallbackMime;
+    return `data:${mime};base64,${base64}`;
+  }
+
   async function renderGraph() {
     if (!viz) return;
 
@@ -342,6 +386,13 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
     const engine = engineSelect.value;
     const textMode = formatSelect.value;
     const inputType = inputTypeSelect.value;
+
+    const rawBaseForImages = (basePathInput.value || "").trim();
+    let baseForImages = rawBaseForImages;
+    if (baseForImages && !baseForImages.endsWith("/")) {
+      baseForImages += "/";
+    }
+    window.dotvizImageBasePath = baseForImages;
 
     statusEl.textContent = "Rendering…";
     previewEl.innerHTML = "";
@@ -369,10 +420,81 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
     }
 
     try {
-      const svgResult = await viz.render(graphInput, {
+      let svgResult = await viz.render(graphInput, {
         format: "svg",
         engine: engine,
       });
+
+      if (svgResult.unresolved_images && baseForImages) {
+        const results = await Promise.all(
+          svgResult.unresolved_images.map(async (image_path) => {
+            const fullUrl = joinBaseAndPath(baseForImages, image_path);
+            try {
+              const response = await fetch(fullUrl);
+              if (!response.ok) {
+                appendMessage(
+                  "warn",
+                  `Image "${image_path}" not found at ${fullUrl} (HTTP ${response.status})`
+                );
+                return null;
+              }
+              const blob = await response.blob();
+
+              let width = 0;
+              let height = 0;
+
+              if (typeof createImageBitmap === "function") {
+                try {
+                  const bitmap = await createImageBitmap(blob);
+                  width = bitmap.width;
+                  height = bitmap.height;
+                  if (typeof bitmap.close === "function") {
+                    bitmap.close();
+                  }
+                } catch (e) {
+                  console.error("createImageBitmap failed for", fullUrl, e);
+                  appendMessage(
+                    "warn",
+                    `Failed to decode image "${image_path}" from ${fullUrl}: ` +
+                      (e && e.message ? e.message : e)
+                  );
+                }
+              }
+
+              try {
+                const dataUrl = await blobToDataUrl(blob, "image/png");
+                imageDataUrlCache.set(fullUrl, dataUrl);
+              } catch (e) {
+                console.error("Failed to build data URL for", fullUrl, e);
+              }
+
+              if (!width || !height) {
+                return null;
+              }
+
+              return [image_path, { width, height }];
+            } catch (e) {
+              console.error("Failed to fetch/measure image", fullUrl, e);
+              appendMessage(
+                "warn",
+                `Failed to resolve image "${image_path}" from ${fullUrl}`
+              );
+              return null;
+            }
+          })
+        );
+
+        const filtered = results.filter((entry) => entry && entry[1]);
+        if (filtered.length > 0) {
+          const images = Object.fromEntries(filtered);
+          svgResult = await viz.render(graphInput, {
+            format: "svg",
+            engine: engine,
+            images,
+            svgBasePath: baseForImages,
+          });
+        }
+      }
 
       if (svgResult.errors && Array.isArray(svgResult.errors)) {
         for (const e of svgResult.errors) {
@@ -485,10 +607,20 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
   }
 
   function getBaseSvgForImage() {
+    const svgInPreview = previewEl.querySelector("svg");
+    if (svgInPreview) {
+      try {
+        return new XMLSerializer().serializeToString(svgInPreview);
+      } catch (e) {
+        console.error("Failed to serialize preview SVG", e);
+      }
+    }
+
     if (formatSelect.value === "svg") {
       const edited = outputText.value.trim();
       if (edited) return edited;
     }
+
     return lastSvgText;
   }
 
@@ -502,58 +634,157 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
       throw new Error(`Failed to fetch font ${desc.url}: ${res.status}`);
     }
     const blob = await res.blob();
-    const buf = await blob.arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    const base64 = btoa(binary);
-    const mime = blob.type || "font/woff2";
-    const dataUrl = `data:${mime};base64,${base64}`;
+    const dataUrl = await blobToDataUrl(blob, "font/woff2");
     fontDataUrlCache.set(desc.url, dataUrl);
     return dataUrl;
   }
 
-  async function buildSvgForImage(baseSvg) {
-    if (!fontDescriptors.length) return baseSvg;
+  async function inlineImagesAsDataUrls(svgText) {
+    if (typeof DOMParser === "undefined" || !svgText) return svgText;
 
-    const svgIndex = baseSvg.indexOf("<svg");
-    if (svgIndex < 0) return baseSvg;
-    if (baseSvg.includes('data-dotviz-font-faces="1"')) return baseSvg;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgText, "image/svg+xml");
+    const svgEl = doc.documentElement;
+    if (!svgEl || svgEl.nodeName.toLowerCase() !== "svg") {
+      return svgText;
+    }
 
-    const rulesParts = [];
-    for (const desc of fontDescriptors) {
+    if (svgEl.getAttribute("data-dotviz-images-inlined") === "1") {
+      return svgText;
+    }
+
+    const images = svgEl.querySelectorAll("image");
+    if (!images.length) return svgText;
+
+    const dotvizBase =
+      typeof window.dotvizImageBasePath === "string"
+        ? window.dotvizImageBasePath
+        : "";
+    const xmlBase =
+      svgEl.getAttribute("xml:base") || svgEl.getAttribute("base") || "";
+
+    async function urlToDataUrl(url) {
+      if (imageDataUrlCache.has(url)) {
+        return imageDataUrlCache.get(url);
+      }
       try {
-        const family = desc.family.replace(/'/g, "\\'");
-        const dataUrl = await fontDescToDataUrl(desc);
-        rulesParts.push(
-          `@font-face { font-family: '${family}'; src: url('${dataUrl}') format('woff2'); }`
-        );
-      } catch (err) {
-        console.error(err);
-        appendMessage(
-          "error",
-          `Failed to embed font "${desc.family}" from ${desc.url}: ` +
-            (err && err.message ? err.message : err)
-        );
+        const res = await fetch(url);
+        if (!res.ok) {
+          appendMessage(
+            "warn",
+            `Failed to inline image ${url}: HTTP ${res.status}`
+          );
+          return null;
+        }
+        const blob = await res.blob();
+        const dataUrl = await blobToDataUrl(blob, "image/png");
+        imageDataUrlCache.set(url, dataUrl);
+        return dataUrl;
+      } catch (e) {
+        console.error("Fetch failed for image", url, e);
+        appendMessage("warn", `Failed to inline image ${url}: ${e}`);
+        return null;
       }
     }
 
-    if (!rulesParts.length) return baseSvg;
+    const tasks = [];
 
-    const rules = rulesParts.join("\n");
-    const styleBlock =
-      `<defs data-dotviz-font-faces="1"><style type="text/css"><![CDATA[\n` +
-      rules +
-      `\n]]></style></defs>`;
+    images.forEach((img) => {
+      let href =
+        img.getAttribute("href") ||
+        img.getAttributeNS("http://www.w3.org/1999/xlink", "href") ||
+        img.getAttribute("xlink:href");
 
-    const tagEnd = baseSvg.indexOf(">", svgIndex);
-    if (tagEnd < 0) return baseSvg;
+      if (!href) return;
+      if (/^data:/i.test(href)) return;
 
-    return (
-      baseSvg.slice(0, tagEnd + 1) + styleBlock + baseSvg.slice(tagEnd + 1)
-    );
+      let url = null;
+
+      try {
+        if (/^https?:/i.test(href)) {
+          url = href;
+        } else if (dotvizBase) {
+          url = joinBaseAndPath(dotvizBase, href);
+        } else if (xmlBase) {
+          url = new URL(href, xmlBase).href;
+        } else {
+          url = new URL(href, window.location.href).href;
+        }
+      } catch (e) {
+        console.error("Failed to resolve image href", href, e);
+        return;
+      }
+
+      tasks.push(
+        (async () => {
+          const dataUrl = await urlToDataUrl(url);
+          if (!dataUrl) return;
+
+          img.setAttribute("href", dataUrl);
+          img.removeAttribute("xlink:href");
+          try {
+            img.removeAttributeNS("http://www.w3.org/1999/xlink", "href");
+          } catch {}
+        })()
+      );
+    });
+
+    if (tasks.length) {
+      await Promise.all(tasks);
+    }
+
+    svgEl.setAttribute("data-dotviz-images-inlined", "1");
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(doc);
+  }
+
+  async function buildSvgForImage(baseSvg) {
+    let svgWithFonts = baseSvg;
+
+    if (fontDescriptors.length) {
+      const svgIndex = svgWithFonts.indexOf("<svg");
+      if (
+        svgIndex >= 0 &&
+        !svgWithFonts.includes('data-dotviz-font-faces="1"')
+      ) {
+        const rulesParts = [];
+        for (const desc of fontDescriptors) {
+          try {
+            const family = desc.family.replace(/'/g, "\\'");
+            const dataUrl = await fontDescToDataUrl(desc);
+            rulesParts.push(
+              `@font-face { font-family: '${family}'; src: url('${dataUrl}') format('woff2'); }`
+            );
+          } catch (err) {
+            console.error(err);
+            appendMessage(
+              "error",
+              `Failed to embed font "${desc.family}" from ${desc.url}: ` +
+                (err && err.message ? err.message : err)
+            );
+          }
+        }
+
+        if (rulesParts.length) {
+          const rules = rulesParts.join("\n");
+          const styleBlock =
+            `<defs data-dotviz-font-faces="1"><style type="text/css"><![CDATA[\n` +
+            rules +
+            `\n]]></style></defs>`;
+
+          const tagEnd = svgWithFonts.indexOf(">", svgIndex);
+          if (tagEnd >= 0) {
+            svgWithFonts =
+              svgWithFonts.slice(0, tagEnd + 1) +
+              styleBlock +
+              svgWithFonts.slice(tagEnd + 1);
+          }
+        }
+      }
+    }
+
+    const svgWithImages = await inlineImagesAsDataUrls(svgWithFonts);
+    return svgWithImages;
   }
 
   async function renderSvgToCanvas(format, callback) {
