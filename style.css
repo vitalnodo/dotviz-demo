@@ -1,24 +1,54 @@
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color-scheme: dark light;
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --fg: #111111;
+  --border: #dddddd;
+  --border-soft: #cccccc;
+  --subtle: #fafafa;
+  --subtle-alt: #f5f5f5;
+
+  --msg-info: #2470ff;
+  --msg-warn: #b8860b;
+  --msg-error: #d32f2f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101010;
+    --fg: #f3f3f3;
+    --border: #333333;
+    --border-soft: #444444;
+    --subtle: #151515;
+    --subtle-alt: #181818;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 header {
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
+  background: var(--subtle);
 }
 
 header h1 {
@@ -35,23 +65,33 @@ label {
 
 select,
 button,
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="text"] {
   font: inherit;
 }
 
 select,
-button {
+button,
+input[type="text"] {
   padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg);
+  color: var(--fg);
 }
 
 button {
   cursor: pointer;
 }
 
+button:hover {
+  background: var(--subtle-alt);
+}
+
 #status {
   margin-left: auto;
   font-size: 0.8rem;
-  opacity: 0.8;
+  opacity: 0.85;
   white-space: nowrap;
 }
 
@@ -59,26 +99,27 @@ main {
   flex: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
   min-height: 0;
 }
 
+/* Панелі (ліва/права) */
 .panel {
-  box-sizing: border-box;
   padding: 0.75rem;
   flex: 1 1 320px;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid var(--border);
   min-height: 0;
+  background: var(--bg);
 }
 
 .panel:last-child {
   border-right: none;
 }
 
+/* Текстові поля */
 textarea {
   width: 100%;
   min-height: 200px;
@@ -86,16 +127,20 @@ textarea {
   font-family: "JetBrains Mono", Consolas, "Fira Code", monospace;
   font-size: 0.85rem;
   padding: 0.5rem;
-  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  background: var(--bg);
+  color: var(--fg);
 }
 
+/* Прев’ю */
 #preview-wrapper {
   flex: 1;
   min-height: 200px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 4px;
   overflow: auto;
-  background: #fafafa;
+  background: var(--subtle);
   padding: 0.5rem;
 }
 
@@ -116,9 +161,10 @@ textarea {
   opacity: 0.8;
 }
 
+/* Messages */
 #messages {
   margin-top: 0.75rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border);
   padding-top: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -137,30 +183,31 @@ textarea {
 #messages-body {
   max-height: 120px;
   overflow: auto;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.4rem 0.5rem;
   font-family: "JetBrains Mono", Consolas, "Fira Code", monospace;
   font-size: 0.75rem;
-  background: #fafafa;
+  background: var(--subtle);
   white-space: pre-wrap;
 }
 
 .msg-line.info {
-  color: #2470ff;
+  color: var(--msg-info);
 }
 
 .msg-line.warn {
-  color: #b8860b;
+  color: var(--msg-warn);
 }
 
 .msg-line.error {
-  color: #d32f2f;
+  color: var(--msg-error);
 }
 
+/* Image tools */
 #image-tools {
   margin-top: 0.75rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -175,10 +222,10 @@ textarea {
 }
 
 #image-preview-wrapper {
-  border: 1px dashed #bbb;
+  border: 1px dashed var(--border-soft);
   border-radius: 4px;
   padding: 0.5rem;
-  background: #fafafa;
+  background: var(--subtle);
   display: inline-block;
   max-width: 100%;
   overflow: auto;
@@ -190,9 +237,10 @@ textarea {
   height: auto;
 }
 
+/* Font tools */
 #font-tools {
   margin-top: 0.75rem;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -214,6 +262,7 @@ small {
   opacity: 0.8;
 }
 
+/* Допоміжні елементи */
 .input-header {
   display: flex;
   align-items: center;
@@ -231,46 +280,45 @@ small {
   font-size: 0.85rem;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  border: 1px solid #ccc;
-  background: #f5f5f5;
+  border: 1px solid var(--border-soft);
+  background: var(--subtle-alt);
+}
 
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #111;
-    color: #eee;
+/* Мобільна адаптація */
+@media (max-width: 768px) {
+  header {
+    align-items: flex-start;
   }
 
-  header {
-    border-bottom-color: #333;
+  header h1 {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
+
+  #status {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+
+  main {
+    flex-direction: column;
   }
 
   .panel {
-    border-right-color: #333;
+    flex: 1 1 auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
 
-  #preview-wrapper {
-    background: #111;
-    border-color: #333;
+  .panel:last-child {
+    border-bottom: none;
   }
 
   textarea {
-    background: #111;
-    color: #eee;
-    border: 1px solid #333;
+    min-height: 160px;
   }
 
-  #image-preview-wrapper {
-    background: #111;
-    border-color: #555;
-  }
-
-  #messages-body {
-    background: #111;
-    border-color: #333;
-  }
-
-  #font-tools {
-    border-top-color: #333;
+  #preview-wrapper {
+    min-height: 180px;
   }
 }
