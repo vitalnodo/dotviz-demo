@@ -255,7 +255,7 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
       } else if (kind === "kennedy") {
         inputTypeSelect.value = "dot";
         dotInput.value = DEMO_KENNEDY_DOT;
-        basePathInput.value = "http://www.graphviz.org/Gallery/directed/";
+        basePathInput.value = "https://www.graphviz.org/Gallery/directed/";
         applyImageBasePathFromInput();
         statusEl.textContent = "Image demo loaded";
         appendMessage("info", "Image demo loaded");
