@@ -1,4 +1,179 @@
 (function () {
+  const DEMO_FONT_DOT = `digraph FontDemo {
+  rankdir = TB;         
+  bgcolor = "white";
+
+  graph [
+    fontname = "Inter",
+    fontsize = 18,
+    labelloc = "t",
+    label = "Three fonts & Inter styles"
+  ];
+
+  node [
+    shape     = box,
+    style     = "rounded,filled",
+    fillcolor = "white",
+    margin    = "0.3,0.2"
+  ];
+
+  Title [label = <
+    <FONT FACE="Bungee" POINT-SIZE="26">FONT DEMO</FONT>
+  >];
+
+  InterStyles [label = <
+    <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="2">
+      <TR>
+        <TD>
+          <FONT FACE="Inter" POINT-SIZE="16">
+            Inter regular
+          </FONT>
+        </TD>
+      </TR>
+      <TR>
+        <TD>
+          <FONT FACE="Inter" POINT-SIZE="16">
+            <B>Inter bold</B>
+          </FONT>
+        </TD>
+      </TR>
+      <TR>
+        <TD>
+          <FONT FACE="Inter" POINT-SIZE="16">
+            <I>Inter italic</I>
+          </FONT>
+        </TD>
+      </TR>
+    </TABLE>
+  >];
+
+  CaveatNote [
+    shape = note,
+    label = <
+      <FONT FACE="Caveat" POINT-SIZE="20">
+        Handwritten<br/>annotation
+      </FONT>
+    >
+  ];
+
+  Title       -> InterStyles;
+  InterStyles -> CaveatNote;
+}
+`;
+
+  const DEMO_JSON = `{
+  "name": "example",
+  "nodeAttributes": {
+    "shape": "circle",
+    "fontname": "Bungee"
+  },
+  "nodes": [
+    { "name": "A" },
+    { "name": "B" },
+    { "name": "C" }
+  ],
+  "edges": [
+    { "tail": "A", "head": "B" },
+    { "tail": "B", "head": "C" }
+  ]
+}
+`;
+
+  const DEMO_KENNEDY_DOT = `/*
+Note: All images in the file is found at
+
+http://www.graphviz.org/Gallery/directed/images/
+
+-----------
+
+from Kaarle Kaila:
+
+
+I have implemented Genealogic descendant and ancestor graphs using Graphviz in FinFamily. I have made som description on how to use it with FinFamily at FinFamily wiki-pages at
+
+http://www.finfamily.fi/index.php/Handbook
+
+I attach a descendant graph from Joseph Patrick Kennedy and an ancestor graph from Caroline Bouvier Kennedy as samples from FinFamily. The file georg.jpg is a descendant graph w/o pictures from an imaginary person Georg af Charlow (who has some common attributes with my father) from my testdatabase like the person Charles Charlow has some resemblance to myself.
+
+If you wish to display the attached pictures or wish me to create another ones then feel free to do so. I wish to thank you for Graphviz that let's me create such nice graphs with FinFamily.
+
+regards
+Kaarle Kaila
+
+I have this little kennedy database as a sample gedcom file on the download webpage to give international users a few wellknown persons to play with  if they wish to try out my software. I originally got it from Michael Kay who is among others Editor at http://www.w3.org/TR/xslt20/. I added the pictures and some data myself.
+
+Attached are both the kennedyanc and kennedydesc files as you requested. I made them as zip-files so that they contain both source and destination files. As you email server does not accept zip-files I renamed them to anc.zip ->anc.files and desc.zip to desc.files. Hope these com through your filters.
+
+Graphviz dot program is called from within FinFamily with a command line such as:
+
+dot -Tjpeg kennedyanc.txt -o kennedyanc.jpg
+
+On page http://www.finfamily.fi/index.php/Graphviz is a description on the different colors together with instructions for finFamily users how to create Graphviz reports.
+
+Kaarle Kaila
+
+
+Colors and forms symbolize following
+
+    * Blue box - man
+    * Red ellipse - woman
+    * Blue line - Father/Child relation
+    * Red line - Mother/Child relation
+    * Green line - Spouse relation
+    * Orange line - Ancestors (other) children
+    * Violet line - Ancestors (other) spouse 
+
+
+
+
+
+*/
+
+/* ancestor graph from Caroline Bouvier Kennedy */
+
+graph G {
+fontname="Helvetica,Arial,sans-serif"
+node [fontname="Helvetica,Arial,sans-serif"]
+edge [fontname="Helvetica,Arial,sans-serif"]
+I5 [shape=ellipse,color=red,style=bold,label="Caroline Bouvier Kennedy\nb. 27.11.1957 New York",image="images/165px-Caroline_Kennedy.jpg",labelloc=b];
+I1 [shape=box,color=blue,style=bold,label="John Fitzgerald Kennedy\nb. 29.5.1917 Brookline\nd. 22.11.1963 Dallas",image="images/kennedyface.jpg",labelloc=b];
+I6 [shape=box,color=blue,style=bold,label="John Fitzgerald Kennedy\nb. 25.11.1960 Washington\nd. 16.7.1999 over the Atlantic Ocean, near Aquinnah, MA, USA",image="images/180px-JFKJr2.jpg",labelloc=b];
+I7 [shape=box,color=blue,style=bold,label="Patrick Bouvier Kennedy\nb. 7.8.1963\nd. 9.8.1963"];
+I2 [shape=ellipse,color=red,style=bold,label="Jaqueline Lee Bouvier\nb. 28.7.1929 Southampton\nd. 19.5.1994 New York City",image="images/jacqueline-kennedy-onassis.jpg",labelloc=b];
+I8 [shape=box,color=blue,style=bold,label="Joseph Patrick Kennedy\nb. 6.9.1888 East Boston\nd. 16.11.1969 Hyannis Port",image="images/1025901671.jpg",labelloc=b];
+I10 [shape=box,color=blue,style=bold,label="Joseph Patrick Kennedy Jr\nb. 1915\nd. 1944"];
+I11 [shape=ellipse,color=red,style=bold,label="Rosemary Kennedy\nb. 13.9.1918\nd. 7.1.2005",image="images/rosemary.jpg",labelloc=b];
+I12 [shape=ellipse,color=red,style=bold,label="Kathleen Kennedy\nb. 1920\nd. 1948"];
+I13 [shape=ellipse,color=red,style=bold,label="Eunice Mary Kennedy\nb. 10.7.1921 Brookline"];
+I9 [shape=ellipse,color=red,style=bold,label="Rose Elizabeth Fitzgerald\nb. 22.7.1890 Boston\nd. 22.1.1995 Hyannis Port",image="images/Rose_kennedy.JPG",labelloc=b];
+I15 [shape=box,color=blue,style=bold,label="Aristotle Onassis"];
+I3 [shape=box,color=blue,style=bold,label="John Vernou Bouvier III\nb. 1891\nd. 1957",image="images/BE037819.jpg",labelloc=b];
+I4 [shape=ellipse,color=red,style=bold,label="Janet Norton Lee\nb. 2.10.1877\nd. 3.1.1968",image="images/n48862003257_1275276_1366.jpg",labelloc=b];
+ I1 -- I5  [style=bold,color=blue]; 
+ I1 -- I6  [style=bold,color=orange]; 
+ I2 -- I6  [style=bold,color=orange]; 
+ I1 -- I7  [style=bold,color=orange]; 
+ I2 -- I7  [style=bold,color=orange]; 
+ I1 -- I2  [style=bold,color=violet]; 
+ I8 -- I1  [style=bold,color=blue]; 
+ I8 -- I10  [style=bold,color=orange]; 
+ I9 -- I10  [style=bold,color=orange]; 
+ I8 -- I11  [style=bold,color=orange]; 
+ I9 -- I11  [style=bold,color=orange]; 
+ I8 -- I12  [style=bold,color=orange]; 
+ I9 -- I12  [style=bold,color=orange]; 
+ I8 -- I13  [style=bold,color=orange]; 
+ I9 -- I13  [style=bold,color=orange]; 
+ I8 -- I9  [style=bold,color=violet]; 
+ I9 -- I1  [style=bold,color=red]; 
+ I2 -- I5  [style=bold,color=red]; 
+ I2 -- I15  [style=bold,color=violet]; 
+ I3 -- I2  [style=bold,color=blue]; 
+ I3 -- I4  [style=bold,color=violet]; 
+ I4 -- I2  [style=bold,color=red]; 
+}
+`;
+
   const inputTypeSelect = document.getElementById("input-type-select");
   const engineSelect = document.getElementById("engine-select");
   const formatSelect = document.getElementById("format-select");
@@ -62,85 +237,54 @@ Caveat|https://fonts.gstatic.com/s/caveat/v18/WnznHAc5bAfYB2QRah7pcpNvOx-pjfJ9eI
 Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2
 `;
 
-  const DEFAULT_DOT = `digraph FontDemo {
-  rankdir = TB;         
-  bgcolor = "white";
+  const DEFAULT_DOT = DEMO_FONT_DOT;
 
-  graph [
-    fontname = "Inter",
-    fontsize = 18,
-    labelloc = "t",
-    label = "Three fonts & Inter styles"
-  ];
+  const DEFAULT_JSON = DEMO_JSON;
 
-  node [
-    shape     = box,
-    style     = "rounded,filled",
-    fillcolor = "white",
-    margin    = "0.3,0.2"
-  ];
+  async function loadDemo(kind) {
+    clearMessages();
+    try {
+      if (kind === "fonts") {
+        inputTypeSelect.value = "dot";
+        dotInput.value = DEMO_FONT_DOT;
+        fontLoaderInput.value = DEFAULT_FONT_LINE;
+        fontsLoadedOnce = false;
+        fontsLoadedPromise = null;
+        statusEl.textContent = "Fonts demo loaded";
+        appendMessage("info", "Fonts demo loaded");
+      } else if (kind === "kennedy") {
+        inputTypeSelect.value = "dot";
+        dotInput.value = DEMO_KENNEDY_DOT;
+        basePathInput.value = "http://www.graphviz.org/Gallery/directed/";
+        applyImageBasePathFromInput();
+        statusEl.textContent = "Image demo loaded";
+        appendMessage("info", "Image demo loaded");
+      } else if (kind === "json") {
+        inputTypeSelect.value = "json";
+        dotInput.value = DEMO_JSON;
+        statusEl.textContent = "JSON demo loaded";
+        appendMessage("info", "JSON demo loaded");
+      }
+      handleInputTypeChange();
+    } catch (e) {
+      console.error(e);
+      appendMessage(
+        "error",
+        "Failed to load demo: " + (e && e.message ? e.message : e)
+      );
+    }
+  }
 
-  Title [label = <
-    <FONT FACE="Bungee" POINT-SIZE="26">FONT DEMO</FONT>
-  >];
-
-  InterStyles [label = <
-    <TABLE BORDER="0" CELLBORDER="0" CELLPADDING="2">
-      <TR>
-        <TD>
-          <FONT FACE="Inter" POINT-SIZE="16">
-            Inter regular
-          </FONT>
-        </TD>
-      </TR>
-      <TR>
-        <TD>
-          <FONT FACE="Inter" POINT-SIZE="16">
-            <B>Inter bold</B>
-          </FONT>
-        </TD>
-      </TR>
-      <TR>
-        <TD>
-          <FONT FACE="Inter" POINT-SIZE="16">
-            <I>Inter italic</I>
-          </FONT>
-        </TD>
-      </TR>
-    </TABLE>
-  >];
-
-  CaveatNote [
-    shape = note,
-    label = <
-      <FONT FACE="Caveat" POINT-SIZE="20">
-        Handwritten<br/>annotation
-      </FONT>
-    >
-  ];
-
-  Title       -> InterStyles;
-  InterStyles -> CaveatNote;
-}
-`;
-
-  const DEFAULT_JSON = `{
-  "name": "example",
-  "nodeAttributes": {
-    "shape": "circle",
-    "fontname": "Bungee"
-  },
-  "nodes": [
-    { "name": "A" },
-    { "name": "B" },
-    { "name": "C" }
-  ],
-  "edges": [
-    { "tail": "A", "head": "B" },
-    { "tail": "B", "head": "C" }
-  ]
-}
-`;
+  const demoButtons = document.querySelectorAll(".demo-buttons [data-demo]");
+  demoButtons.forEach((el) => {
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
+      const kind = el.getAttribute("data-demo");
+      if (kind) {
+        loadDemo(kind).catch(console.error);
+      }
+    });
+  });
 
   let viz = null;
   let lastSvgText = "";
@@ -192,12 +336,10 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
   function setDefaultInputForType(type) {
     if (type === "dot") {
       dotInput.value = DEFAULT_DOT;
-      inputHint.textContent =
-        'DOT mode. Tip: Ctrl+Enter to render. Default font: "Bungee".';
+      inputHint.textContent = "DOT mode.";
     } else {
       dotInput.value = DEFAULT_JSON;
-      inputHint.textContent =
-        'JSON mode. Example JSON is shown. Default font: "Bungee".';
+      inputHint.textContent = "JSON mode. ";
     }
   }
 
@@ -206,11 +348,6 @@ Inter|https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7
     const current = dotInput.value.trim();
     if (!current) {
       setDefaultInputForType(type);
-    } else {
-      inputHint.textContent =
-        type === "dot"
-          ? "DOT mode. Existing content preserved."
-          : "JSON mode. Existing content will be parsed as JSON and passed to dotviz.render.";
     }
   }
 

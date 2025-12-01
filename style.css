@@ -214,6 +214,27 @@ small {
   opacity: 0.8;
 }
 
+.input-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.demo-buttons {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.demo-buttons button {
+  font-size: 0.85rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+
+
 @media (prefers-color-scheme: dark) {
   body {
     background: #111;
